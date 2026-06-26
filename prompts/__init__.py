@@ -1,0 +1,1 @@
+"""FinSight AI — prompts package."""

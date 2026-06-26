@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinSight AI Report — {{ ticker }}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --primary: #1a1a2e;
+      --accent: #16213e;
+      --blue: #0f3460;
+      --gold: #e94560;
+      --bullish: #00b894;
+      --bearish: #d63031;
+      --neutral: #636e72;
+      --light-bg: #f8f9fa;
+      --border: #dee2e6;
+      --text: #2d3436;
+      --text-muted: #636e72;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      background: white;
+      font-size: 11pt;
+      line-height: 1.6;
+    }
+
+    /* ---- Page Layout ---- */
+    @page {
+      size: A4;
+      margin: 20mm 15mm 20mm 15mm;
+      @bottom-center {
+        content: "FinSight AI | Confidential | Page " counter(page) " of " counter(pages);
+        font-size: 8pt;
+        color: var(--text-muted);
+        font-family: 'Inter', sans-serif;
+      }
+    }
+
+    @page :first {
+      @bottom-center { content: ""; }
+    }
+
+    /* ---- Cover Page ---- */
+    .cover {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--blue) 100%);
+      color: white;
+      page-break-after: always;
+      margin: -20mm -15mm;
+      padding: 40mm 20mm;
+    }
+
+    .cover-logo {
+      font-size: 14pt;
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      opacity: 0.8;
+      margin-bottom: 8mm;
+    }
+
+    .cover-ticker {
+      font-size: 48pt;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 4mm;
+    }
+
+    .cover-company {
+      font-size: 18pt;
+      font-weight: 300;
+      opacity: 0.85;
+      margin-bottom: 12mm;
+    }
+
+    .signal-badge {
+      display: inline-block;
+      padding: 4mm 12mm;
+      border-radius: 50px;
+      font-size: 18pt;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      margin-bottom: 8mm;
+    }
+
+    .signal-BULLISH { background: var(--bullish); color: white; }
+    .signal-BEARISH { background: var(--bearish); color: white; }
+    .signal-NEUTRAL { background: var(--neutral); color: white; }
+
+    .cover-confidence {
+      font-size: 11pt;
+      opacity: 0.7;
+      margin-bottom: 6mm;
+    }
+
+    .cover-date {
+      font-size: 10pt;
+      opacity: 0.6;
+      margin-top: auto;
+    }
+
+    /* ---- Content Sections ---- */
+    .section {
+      margin-bottom: 10mm;
+      page-break-inside: avoid;
+    }
+
+    .section-header {
+      font-size: 14pt;
+      font-weight: 700;
+      color: var(--blue);
+      border-bottom: 2px solid var(--blue);
+      padding-bottom: 2mm;
+      margin-bottom: 5mm;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .subsection-header {
+      font-size: 11pt;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 3mm;
+      margin-top: 5mm;
+    }
+
+    /* ---- Executive Summary ---- */
+    .exec-summary {
+      background: var(--light-bg);
+      border-left: 4px solid var(--blue);
+      padding: 5mm;
+      border-radius: 0 4px 4px 0;
+      font-size: 10.5pt;
+      line-height: 1.7;
+    }
+
+    /* ---- Signal Box ---- */
+    .signal-box {
+      display: flex;
+      align-items: center;
+      gap: 5mm;
+      padding: 5mm;
+      background: var(--light-bg);
+      border-radius: 4px;
+      margin-bottom: 5mm;
+    }
+
+    .signal-box .badge {
+      padding: 2mm 6mm;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 12pt;
+      color: white;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .confidence-badge {
+      font-size: 9pt;
+      padding: 1mm 4mm;
+      border-radius: 3px;
+      background: #b2bec3;
+      color: white;
+      font-weight: 600;
+    }
+
+    /* ---- Bullet Lists ---- */
+    .thesis-list, .risk-list, .bullet-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .thesis-list li, .risk-list li {
+      padding: 2mm 0 2mm 6mm;
+      border-left: 3px solid var(--blue);
+      margin-bottom: 2mm;
+      font-size: 10pt;
+    }
+
+    .risk-list li { border-left-color: var(--bearish); }
+
+    /* ---- Tables ---- */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9.5pt;
+      margin-top: 3mm;
+    }
+
+    th {
+      background: var(--blue);
+      color: white;
+      padding: 2.5mm 3mm;
+      text-align: left;
+      font-weight: 600;
+      font-size: 9pt;
+    }
+
+    td {
+      padding: 2mm 3mm;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:nth-child(even) td { background: #f8f9fa; }
+
+    .ratio-positive { color: var(--bullish); font-weight: 600; }
+    .ratio-negative { color: var(--bearish); font-weight: 600; }
+    .ratio-neutral { color: var(--text); }
+
+    .severity-5, .severity-4 { color: var(--bearish); font-weight: 700; }
+    .severity-3 { color: #e17055; font-weight: 600; }
+    .severity-2, .severity-1 { color: var(--bullish); }
+
+    /* ---- Sentiment Bar ---- */
+    .sentiment-bar-container {
+      background: #f0f0f0;
+      border-radius: 20px;
+      height: 12px;
+      width: 100%;
+      margin: 3mm 0;
+      overflow: hidden;
+    }
+
+    .sentiment-bar-fill {
+      height: 100%;
+      border-radius: 20px;
+    }
+
+    .sentiment-positive { background: var(--bullish); }
+    .sentiment-negative { background: var(--bearish); }
+    .sentiment-neutral { background: var(--neutral); }
+
+    /* ---- Score Indicators ---- */
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3mm;
+      margin: 3mm 0;
+    }
+
+    .score-card {
+      background: var(--light-bg);
+      border-radius: 4px;
+      padding: 3mm;
+      text-align: center;
+    }
+
+    .score-value {
+      font-size: 20pt;
+      font-weight: 700;
+      color: var(--blue);
+    }
+
+    .score-label {
+      font-size: 8pt;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ---- Charts ---- */
+    .chart-container {
+      text-align: center;
+      margin: 3mm 0;
+    }
+
+    .chart-container img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+
+    /* ---- Sources ---- */
+    .source-list {
+      font-size: 8.5pt;
+      color: var(--text-muted);
+    }
+
+    .source-list li { margin-bottom: 1mm; }
+
+    /* ---- Footer ---- */
+    .disclaimer {
+      font-size: 8pt;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 3mm;
+      margin-top: 8mm;
+    }
+
+    /* ---- Page Breaks ---- */
+    .page-break { page-break-after: always; }
+    .no-break { page-break-inside: avoid; }
+  </style>
+</head>
+<body>
+
+<!-- ================================================================ -->
+<!-- COVER PAGE -->
+<!-- ================================================================ -->
+<div class="cover">
+  <div class="cover-logo">FinSight AI</div>
+  <div class="cover-ticker">{{ ticker }}</div>
+  <div class="cover-company">{{ company_name }}</div>
+  <div class="signal-badge signal-{{ signal }}">{{ signal }}</div>
+  <div class="cover-confidence">Confidence: {{ confidence }}</div>
+  <div style="font-size:10pt; opacity:0.7; max-width:300px; margin-top:5mm;">
+    {{ signal_rationale }}
+  </div>
+  <div class="cover-date">Generated {{ generated_at }} | FinSight AI v1.0</div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 2: EXECUTIVE SUMMARY & SIGNAL -->
+<!-- ================================================================ -->
+<div class="section no-break">
+  <div class="section-header">Overall Assessment</div>
+
+  <div class="signal-box">
+    <div class="badge signal-{{ signal }}">{{ signal }}</div>
+    <div class="confidence-badge">{{ confidence }} CONFIDENCE</div>
+    <div style="flex:1; font-size:10pt; color: var(--text-muted);">{{ signal_rationale }}</div>
+  </div>
+
+  <div class="score-grid">
+    <div class="score-card">
+      <div class="score-value">{{ "%.1f"|format(financial_score) }}</div>
+      <div class="score-label">Financial Health</div>
+    </div>
+    <div class="score-card">
+      <div class="score-value">{{ "%.1f"|format(risk_score) }}</div>
+      <div class="score-label">Risk Score</div>
+    </div>
+    <div class="score-card">
+      <div class="score-value">{{ "%.2f"|format(sentiment_score) }}</div>
+      <div class="score-label">Sentiment</div>
+    </div>
+  </div>
+</div>
+
+<div class="section no-break">
+  <div class="section-header">Executive Summary</div>
+  <div class="exec-summary">{{ executive_summary }}</div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5mm;">
+  <div class="section no-break">
+    <div class="subsection-header">Investment Thesis</div>
+    <ul class="thesis-list">
+      {% for point in investment_thesis %}
+      <li>{{ point }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="section no-break">
+    <div class="subsection-header">Key Risks</div>
+    <ul class="risk-list">
+      {% for risk in key_risks %}
+      <li>{{ risk }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 3: FINANCIAL ANALYSIS -->
+<!-- ================================================================ -->
+<div class="page-break"></div>
+
+<div class="section">
+  <div class="section-header">Financial Analysis</div>
+
+  <div class="subsection-header">Key Ratios</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>Value</th>
+        <th>Interpretation</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in ratio_rows %}
+      <tr>
+        <td>{{ row.name }}</td>
+        <td class="{{ row.css_class }}">{{ row.value }}</td>
+        <td style="font-size:8.5pt; color: var(--text-muted);">{{ row.note }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if returns_chart %}
+  <div class="subsection-header">Price Performance</div>
+  <div class="chart-container">
+    <img src="data:image/png;base64,{{ returns_chart }}" alt="Price Returns Chart" style="max-height:120px;">
+  </div>
+  {% endif %}
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; margin-top:4mm;">
+    <div>
+      <div class="subsection-header">Strengths</div>
+      <ul class="bullet-list">
+        {% for s in strengths %}
+        <li style="padding:1mm 0 1mm 4mm; border-left:2px solid var(--bullish); margin-bottom:1mm; font-size:9.5pt;">{{ s }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div>
+      <div class="subsection-header">Weaknesses</div>
+      <ul class="bullet-list">
+        {% for w in weaknesses %}
+        <li style="padding:1mm 0 1mm 4mm; border-left:2px solid var(--bearish); margin-bottom:1mm; font-size:9.5pt;">{{ w }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 4: RISK ANALYSIS -->
+<!-- ================================================================ -->
+<div class="page-break"></div>
+
+<div class="section">
+  <div class="section-header">Risk Analysis</div>
+
+  <div style="font-size:10pt; margin-bottom:4mm;">
+    <strong>Overall Risk Score:</strong>
+    <span style="font-size:16pt; font-weight:700; color:{% if risk_score > 7 %}var(--bearish){% elif risk_score > 4 %}#e17055{% else %}var(--bullish){% endif %};">
+      {{ "%.1f"|format(risk_score) }}/10
+    </span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Description</th>
+        <th>Severity</th>
+        <th>Likelihood</th>
+        <th>Source</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rf in risk_factors %}
+      <tr>
+        <td><strong>{{ rf.category }}</strong></td>
+        <td style="font-size:8.5pt;">{{ rf.description }}</td>
+        <td class="severity-{{ rf.severity }}">{{ rf.severity }}/5</td>
+        <td>{{ rf.likelihood }}/5</td>
+        <td style="font-size:8pt; color: var(--text-muted);">{{ rf.source_filing }}{% if rf.is_new %} <span style="color:var(--bearish);">NEW</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 5: SENTIMENT ANALYSIS -->
+<!-- ================================================================ -->
+<div class="page-break"></div>
+
+<div class="section">
+  <div class="section-header">Sentiment Analysis</div>
+
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; margin-bottom:4mm;">
+    <div class="score-card">
+      <div class="score-value" style="font-size:16pt; color:{% if sentiment_score > 0.2 %}var(--bullish){% elif sentiment_score < -0.2 %}var(--bearish){% else %}var(--neutral){% endif %};">
+        {{ "%.2f"|format(sentiment_score) }}
+      </div>
+      <div class="score-label">Aggregate Score</div>
+    </div>
+    <div class="score-card">
+      <div class="score-value" style="font-size:16pt; color:var(--bullish);">{{ positive_count }}</div>
+      <div class="score-label">Positive</div>
+    </div>
+    <div class="score-card">
+      <div class="score-value" style="font-size:16pt; color:var(--bearish);">{{ negative_count }}</div>
+      <div class="score-label">Negative</div>
+    </div>
+    <div class="score-card">
+      <div class="score-value" style="font-size:16pt;">{{ neutral_count }}</div>
+      <div class="score-label">Neutral</div>
+    </div>
+  </div>
+
+  <div style="font-size:9.5pt; color: var(--text-muted); margin-bottom:2mm;">
+    Trend: <strong style="color:var(--text);">{{ sentiment_trend }}</strong> &nbsp;|&nbsp;
+    Articles analyzed: <strong>{{ article_count }}</strong> &nbsp;|&nbsp;
+    Earnings tone: <strong>{{ earnings_tone }}</strong>
+  </div>
+
+  <!-- Sentiment bar -->
+  <div class="sentiment-bar-container">
+    {% set total = positive_count + negative_count + neutral_count %}
+    {% if total > 0 %}
+    <div style="display:flex; height:100%;">
+      <div class="sentiment-bar-fill sentiment-positive" style="width:{{ (positive_count / total * 100)|int }}%;"></div>
+      <div class="sentiment-bar-fill sentiment-neutral" style="width:{{ (neutral_count / total * 100)|int }}%;"></div>
+      <div class="sentiment-bar-fill sentiment-negative" style="width:{{ (negative_count / total * 100)|int }}%;"></div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if sentiment_chart %}
+  <div class="chart-container">
+    <img src="data:image/png;base64,{{ sentiment_chart }}" alt="Sentiment Chart" style="max-height:150px;">
+  </div>
+  {% endif %}
+
+  <div class="subsection-header">Top News Events</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Headline</th>
+        <th>Sentiment</th>
+        <th>Significance</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for event in top_events %}
+      <tr>
+        <td style="white-space:nowrap; font-size:8.5pt;">{{ event.date }}</td>
+        <td style="font-size:8.5pt;">{{ event.headline[:80] }}</td>
+        <td class="{% if event.sentiment == 'POSITIVE' %}ratio-positive{% elif event.sentiment == 'NEGATIVE' %}ratio-negative{% else %}ratio-neutral{% endif %}" style="font-size:8.5pt;">
+          {{ event.sentiment }}
+        </td>
+        <td style="font-size:8.5pt; color: var(--text-muted);">{{ event.significance[:60] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- ================================================================ -->
+<!-- CONCLUSION -->
+<!-- ================================================================ -->
+<div class="section no-break">
+  <div class="section-header">Conclusion</div>
+  <div class="exec-summary">{{ conclusion }}</div>
+</div>
+
+<!-- ================================================================ -->
+<!-- SOURCES -->
+<!-- ================================================================ -->
+<div class="section no-break">
+  <div class="section-header">Data Sources</div>
+  <ul class="source-list">
+    {% for source in sources[:8] %}
+    <li>{{ source.type }} | {{ source.title }} | {{ source.date }}</li>
+    {% endfor %}
+  </ul>
+</div>
+
+<!-- ================================================================ -->
+<!-- DISCLAIMER -->
+<!-- ================================================================ -->
+<div class="disclaimer">
+  <strong>Disclaimer:</strong> This report is generated by FinSight AI, an automated analysis platform.
+  The information contained herein is for informational purposes only and does not constitute investment advice.
+  Past performance is not indicative of future results. Always conduct your own due diligence before making investment decisions.
+  Data sourced from SEC EDGAR, Yahoo Finance, and public news sources.
+</div>
+
+</body>
+</html>

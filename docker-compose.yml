@@ -1,0 +1,60 @@
+version: "3.9"
+
+# FinSight AI — Docker Compose
+# Note: The app runs natively with Python (no Docker dependency required for MVP).
+# This compose file is provided for containerized deployments.
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finsight-api
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - NEWSAPI_KEY=${NEWSAPI_KEY:-}
+      - FRED_API_KEY=${FRED_API_KEY:-}
+      - DATABASE_URL=sqlite:////data/finsight.db
+      - CHROMA_PERSIST_DIR=/data/chroma
+      - CACHE_DIR=/data/cache
+      - PDF_OUTPUT_DIR=/data/reports
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - finsight_data:/data
+    command: >
+      uvicorn app.main:app
+      --host 0.0.0.0
+      --port 8000
+      --workers 1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finsight-dashboard
+    ports:
+      - "8501:8501"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    command: >
+      streamlit run dashboard/Home.py
+      --server.port 8501
+      --server.address 0.0.0.0
+      --server.headless true
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  finsight_data:
+    driver: local

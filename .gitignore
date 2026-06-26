@@ -1,0 +1,69 @@
+# ============================================================
+# FinSight AI — .gitignore
+# ============================================================
+
+# ---- Environment & Secrets (NEVER commit these) ----
+.env
+*.env
+.env.local
+.env.production
+secrets.json
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.pyo
+*.pyc
+
+# ---- Virtual environments ----
+venv/
+.venv/
+env/
+.conda/
+conda-env/
+
+# ---- Data directories (auto-generated at runtime) ----
+.chroma_data/
+.cache_data/
+.reports/
+*.db
+*.sqlite
+*.sqlite3
+finsight.db
+
+# ---- Generated PDFs ----
+*.pdf
+
+# ---- Jupyter / IDE ----
+.ipynb_checkpoints/
+*.ipynb
+.idea/
+.vscode/
+*.code-workspace
+
+# ---- OS files ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Test artifacts ----
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.log
+
+# ---- Distribution ----
+*.tar.gz
+*.zip
+*.whl
+
+# ---- WeasyPrint / Jinja cache ----
+__jinja2_cache__/
